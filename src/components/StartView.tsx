@@ -1,17 +1,21 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Sword, Shield, Sparkles, LogOut, Info, Trophy } from 'lucide-react';
+import { Sword, Shield, Sparkles, LogOut, Info, Trophy, Bell } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import UpdatesModal from './UpdatesModal';
 
 export default function StartView({ onStart, onShowInstructions, onShowLeaderboard }: { 
   onStart: () => void, 
   onShowInstructions: () => void,
   onShowLeaderboard: () => void 
 }) {
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const handleLogout = () => signOut(auth);
 
   return (
     <div className="relative h-screen flex flex-col items-center justify-center overflow-hidden bg-[#05050a]">
+      <UpdatesModal isOpen={isUpdatesOpen} onClose={() => setIsUpdatesOpen(false)} />
       {/* Dynamic Background Atmosphere */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(99,102,241,0.12)_0%,transparent_60%)] animate-pulse" />
       
@@ -100,6 +104,13 @@ export default function StartView({ onStart, onShowInstructions, onShowLeaderboa
           </motion.button>
 
           <div className="flex gap-4">
+            <button
+              onClick={() => setIsUpdatesOpen(true)}
+              className="p-5 bg-white/5 border border-white/10 text-white/60 rounded-full hover:bg-indigo-500/20 hover:text-indigo-300 transition-all group"
+              title="View Updates"
+            >
+              <Bell className="w-5 h-5 group-active:scale-90 transition-transform" />
+            </button>
             <button
               onClick={onShowLeaderboard}
               className="p-5 bg-white/5 border border-white/10 text-white/60 rounded-full hover:bg-white/10 hover:text-white transition-all group"

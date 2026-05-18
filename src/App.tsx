@@ -32,12 +32,16 @@ export default function App() {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    return onAuthStateChanged(auth, (user) => {
       setIsAuthenticated(!!user);
-      if (user && !hasLoadedSavedRun) {
-        // Fetch saved run
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated === true && auth.currentUser && !hasLoadedSavedRun) {
+      const loadSavedRun = async () => {
         try {
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          const userDoc = await getDoc(doc(db, 'users', auth.currentUser!.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
             if (data.activeRun) {
@@ -49,10 +53,10 @@ export default function App() {
         } finally {
           setHasLoadedSavedRun(true);
         }
-      }
-    });
-    return unsubscribe;
-  }, [hasLoadedSavedRun]);
+      };
+      loadSavedRun();
+    }
+  }, [isAuthenticated, hasLoadedSavedRun]);
 
   // Persistent Savings
   useEffect(() => {
@@ -315,6 +319,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0502] text-white font-sans selection:bg-orange-500/30 overflow-hidden">
       <AnimatePresence mode="wait">
+        {isAuthenticated === null && (
+          <div className="min-h-screen flex items-center justify-center bg-[#0a0502] text-white/50 italic">
+            Connecting to the Spire...
+          </div>
+        )}
+
         {isAuthenticated === false && (
           <motion.div key="auth" className="w-full h-full">
             <AuthView onAuthComplete={() => setIsAuthenticated(true)} />

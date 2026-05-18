@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { auth, db } from '../lib/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { Shield, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { Shield, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function AuthView({ onAuthComplete }: { onAuthComplete: () => void }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
@@ -17,14 +18,12 @@ export default function AuthView({ onAuthComplete }: { onAuthComplete: () => voi
     setError('');
     setLoading(true);
 
-    const syntheticEmail = `${username.toLowerCase().trim()}@spire.local`;
-
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, syntheticEmail, password);
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
         if (!username.trim() || username.length < 3) throw new Error('Name must be at least 3 characters');
-        const userCredential = await createUserWithEmailAndPassword(auth, syntheticEmail, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         // Initialize user document in Firestore
@@ -40,9 +39,10 @@ export default function AuthView({ onAuthComplete }: { onAuthComplete: () => voi
       console.error(err);
       let msg = 'The shadows reject this identity.';
       if (err.code === 'auth/wrong-password') msg = 'Incorrect spiritual cipher.';
-      if (err.code === 'auth/user-not-found') msg = 'This name is unknown to the Spire.';
-      if (err.code === 'auth/email-already-in-use') msg = 'This name is already bound to another soul.';
+      if (err.code === 'auth/user-not-found') msg = 'This user is unknown.';
+      if (err.code === 'auth/email-already-in-use') msg = 'This email is already bound.';
       if (err.code === 'auth/weak-password') msg = 'Cipher must be at least 6 characters.';
+      if (err.code === 'auth/operation-not-allowed') msg = 'Email/password auth is not enabled.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -65,14 +65,36 @@ export default function AuthView({ onAuthComplete }: { onAuthComplete: () => voi
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <AnimatePresence mode="wait">
+            {!isLogin && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2"
+              >
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                  <input 
+                    type="text"
+                    placeholder="Wanderer Name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-12 py-4 text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="space-y-2">
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
               <input 
-                type="text"
-                placeholder="Wanderer Name"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                placeholder="Soul Address (Email)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-12 py-4 text-sm focus:outline-none focus:border-indigo-500/50 transition-colors"
                 required
               />
