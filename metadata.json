@@ -1,0 +1,6 @@
+{
+  "name": "Spire of Souls",
+  "description": "A roguelike card-based battler where you climb a mysterious tower, collect powerful spirits, and fight your way to the top.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

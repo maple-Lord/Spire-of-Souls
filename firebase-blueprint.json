@@ -1,0 +1,23 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Public profile and progress of a player.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "username": { "type": "string", "description": "Display name selected by user" },
+        "highestFloor": { "type": "integer", "description": "The maximum floor reached by this user" },
+        "activeRun": { "type": "object", "description": "Serialized current game state" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last time progress was updated" }
+      },
+      "required": ["uid", "username", "highestFloor", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles indexed by their Auth UID"
+    }
+  }
+}

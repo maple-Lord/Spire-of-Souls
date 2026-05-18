@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Master Gate / Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'username', 'highestFloor', 'updatedAt'])
+        && data.uid == request.auth.uid
+        && data.username is string
+        && data.highestFloor is int
+        && data.updatedAt == request.time;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Leaderboard requires reading other users
+      allow get, list: if isSignedIn();
+      
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      
+      allow update: if isOwner(userId) 
+        && isValidUser(request.resource.data)
+        && (
+          // Ensure they don't downgrade their floor (anti-cheat)
+          request.resource.data.highestFloor >= resource.data.highestFloor
+        )
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['highestFloor', 'updatedAt', 'activeRun']);
+    }
+  }
+}
