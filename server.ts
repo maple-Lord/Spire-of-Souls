@@ -19,6 +19,19 @@ const ai = new GoogleGenAI({
   }
 });
 
+async function generateWithRetry(params: any, retries = 3, delay = 1000): Promise<any> {
+  try {
+    return await ai.models.generateContent(params);
+  } catch (error: any) {
+    if (retries > 0 && (error.status === 503 || error.code === 503)) {
+      console.warn(`Gemini 503 error, retrying... (${retries} retries left)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return generateWithRetry(params, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
 app.use(express.json());
 
 // API Routes
@@ -42,7 +55,7 @@ app.post("/api/chat/battle", async (req, res) => {
       Constraint: Keep it under 25 words. Be funny, emotional, and reactive.
     `;
 
-    const response = await ai.models.generateContent({
+    const response = await generateWithRetry({
       model: "gemini-3-flash-preview",
       contents: prompt,
       config: {

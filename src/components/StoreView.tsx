@@ -141,6 +141,13 @@ export default function StoreView({ state, onUpdate, onLeave }: StoreViewProps) 
                 </button>
                 <h2 className="text-4xl font-serif italic mb-2">Spirit Refinement</h2>
                 <p className="text-white/40 italic">Select a spirit to strengthen its resonance.</p>
+                
+                <button 
+                    onClick={onLeave}
+                    className="mt-6 text-[10px] uppercase font-bold tracking-widest text-white/20 hover:text-white transition-colors flex items-center gap-2 mx-auto"
+                >
+                    <ArrowLeft className="w-3 h-3" /> Continue Descent
+                </button>
               </div>
 
               <div className="flex flex-wrap justify-center gap-6 p-4">

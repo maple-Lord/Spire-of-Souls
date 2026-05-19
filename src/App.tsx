@@ -395,6 +395,7 @@ export default function App() {
                  if (gameState.currentNodeId !== null) {
                    completeNode(gameState.currentNodeId!, 0);
                  }
+                 setGameState(prev => ({ ...prev, screen: 'map' }));
                }}
              />
           </motion.div>
